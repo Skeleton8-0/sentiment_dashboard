@@ -8,4 +8,3 @@ text_input = st.text_area("Enter your text for sentiment analysis")
 if st.button("Analyze"):
     st.write("🔍 Analyzing sentiment...")
     st.success("This is where results will appear.")
-
