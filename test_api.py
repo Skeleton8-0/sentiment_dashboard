@@ -1,4 +1,5 @@
 from utils.api_client import batch_analyze_sentiment_with_keywords
+from components.data_visualization import display_text_analysis, plot_sentiment_bar
 
 texts = [
     "I love this product! It's excellent and very useful.",
@@ -7,5 +8,9 @@ texts = [
 ]
 
 results = batch_analyze_sentiment_with_keywords(texts)
-for r in results:
-    print(f"Text: {r['text']}\nSentiment: {r.get('sentiment')}\nKeywords: {r.get('keywords')}\nError: {r.get('error')}\n")
+
+# Display in terminal
+display_text_analysis(results)
+
+# Optional: plot charts
+plot_sentiment_bar(results)

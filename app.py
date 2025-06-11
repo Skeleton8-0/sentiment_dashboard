@@ -1,10 +1,24 @@
 import streamlit as st
+from utils.api_client import analyze_sentiment
+from utils.text_processing import extract_keywords, explain_sentiment
 
-st.set_page_config(page_title="Sentiment Analysis Dashboard")
-st.title("📊 Sentiment Analysis Dashboard")
+st.title("Sentiment Analyzer with Key Phrase Extraction")
 
-text_input = st.text_area("Enter your text for sentiment analysis")
+user_input = st.text_area("Enter text to analyze:")
 
 if st.button("Analyze"):
-    st.write("🔍 Analyzing sentiment...")
-    st.success("This is where results will appear.")
+    if user_input:
+        sentiment_result = analyze_sentiment(user_input)
+        explanation = explain_sentiment(sentiment_result)
+        keywords = extract_keywords(user_input)
+
+        st.subheader("Sentiment Prediction")
+        st.write(sentiment_result)
+
+        st.subheader("Explanation")
+        st.write(explanation)
+
+        st.subheader("Extracted Keywords")
+        st.write(", ".join(keywords))
+    else:
+        st.warning("Please enter some text.")
