@@ -10,7 +10,7 @@ def export_to_pdf(data, filename="sentiment_report.pdf"):
     pdf.ln(10)
 
     for index, row in data.iterrows():
-        pdf.cell(200, 10, txt=f"{index+1}. {row['text'][:50]}... → {row['sentiment']} ({row['confidence']}%)", ln=True)
+        pdf.cell(200, 10, txt=f"{index+1}. {row['text'][:50]}... -> {row['sentiment']} ({row['confidence']}%)", ln=True)
 
     pdf.output(filename)
     return filename

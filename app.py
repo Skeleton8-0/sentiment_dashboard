@@ -1,65 +1,75 @@
 import streamlit as st
+from utils.api_client import batch_analyze_sentiment_with_keywords
+from utils.text_processing import explain_sentiment
 from components.data_visualization import (
     compute_sentiment_distribution,
     plot_sentiment_distribution_bar,
     plot_sentiment_distribution_pie,
     results_to_dataframe
 )
-from utils.api_client import batch_analyze_sentiment_with_keywords
-import pprint
+from export.export_csv import export_to_csv
+from export.export_json import export_to_json
+from export.export_pdf import export_to_pdf
 
-st.set_page_config(page_title="Sentiment Analysis Visualizer", layout="wide")
-st.title("📊 Sentiment Analysis Visualizer")
+st.set_page_config(page_title="AI Sentiment Dashboard", layout="wide")
+st.title("💬 AI-Powered Sentiment Analyzer")
+st.markdown("""
+Welcome to the **AI Sentiment Dashboard**! Upload your texts or enter them manually,
+and get real-time sentiment analysis along with keyword extraction, interactive charts,
+and data export options.
+""")
 
-# Initialize session state for results and chart type
-if "analysis_results" not in st.session_state:
-    st.session_state.analysis_results = None
-if "chart_type" not in st.session_state:
-    st.session_state.chart_type = "Bar Chart"
+# --- Input Section ---
+st.sidebar.header("🛠️ Input Options")
+input_mode = st.sidebar.radio("Choose how to provide your text data:", ["Manual entry", "Upload .txt file"])
 
-# User input
-user_input = st.text_area("Enter text for sentiment analysis (or one per line for batch):")
+texts = []
+if input_mode == "Manual entry":
+    user_input = st.text_area("✍️ Enter one comment per line:", height=200)
+    if user_input:
+        texts = [line.strip() for line in user_input.splitlines() if line.strip()]
+else:
+    uploaded_file = st.sidebar.file_uploader("📄 Upload a .txt file", type=["txt"])
+    if uploaded_file:
+        content = uploaded_file.read().decode("utf-8")
+        texts = [line.strip() for line in content.splitlines() if line.strip()]
 
-# Run sentiment analysis button
-if st.button("🔍 Analyze Sentiment"):
-    if not user_input.strip():
-        st.warning("Please enter some text before running analysis.")
-    else:
-        # Process user input
-        batch_input = [line for line in user_input.strip().split("\n") if line]
-        results = batch_analyze_sentiment_with_keywords(batch_input)
+# --- Analysis Button ---
+if texts:
+    if st.button("🚀 Analyze Texts"):
+        with st.spinner("Analyzing sentiments and extracting keywords..."):
+            results = batch_analyze_sentiment_with_keywords(texts)
 
-        # DEBUG: Print raw sentiment results to terminal
-        print("=== DEBUG: API Raw Results ===")
-        pprint.pprint(results)
+            # --- Display Results ---
+            st.subheader("🔍 Detailed Results")
+            for res in results:
+                with st.expander(f"💬 {res['text'][:80]}..."):
+                    st.markdown(f"**Sentiment:** {explain_sentiment(res['sentiment'])}")
+                    st.markdown(f"**Keywords:** `{', '.join(res['keywords'])}`")
 
-        # Store in session state
-        st.session_state.analysis_results = results
+            # --- Charts ---
+            st.subheader("📊 Sentiment Overview")
+            counts, percentages = compute_sentiment_distribution(results)
+            col1, col2 = st.columns(2)
+            with col1:
+                st.plotly_chart(plot_sentiment_distribution_bar(counts), use_container_width=True)
+            with col2:
+                st.plotly_chart(plot_sentiment_distribution_pie(counts), use_container_width=True)
 
-# Display charts if analysis has been done
-if st.session_state.analysis_results:
-    st.subheader("📈 Sentiment Distribution")
+            # --- Export Options ---
+            st.subheader("📤 Export Results")
+            df = results_to_dataframe(results)
+            col_csv, col_json, col_pdf = st.columns(3)
 
-    counts, percentages = compute_sentiment_distribution(st.session_state.analysis_results)
-    df = results_to_dataframe(st.session_state.analysis_results)
-
-    # Dropdown to choose chart type
-    chart_type = st.selectbox("Choose chart type:", ["Bar Chart", "Pie Chart"], index=["Bar Chart", "Pie Chart"].index(st.session_state.chart_type))
-    st.session_state.chart_type = chart_type
-
-    # Show selected chart
-    if chart_type == "Bar Chart":
-        fig = plot_sentiment_distribution_bar(counts)
-    else:
-        fig = plot_sentiment_distribution_pie(counts)
-    
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.markdown("**Sentiment Counts:**")
-    st.write(counts)
-
-    st.markdown("**Sentiment Percentages:**")
-    st.write(percentages)
-
-    st.subheader("📋 Detailed Sentiment Table")
-    st.dataframe(df, use_container_width=True)
+            with col_csv:
+                st.download_button(
+                    "⬇️ Download CSV", export_to_csv(df), file_name="sentiment_results.csv", mime="text/csv")
+            with col_json:
+                st.download_button(
+                    "⬇️ Download JSON", df.to_json(orient="records"), file_name="sentiment_results.json", mime="application/json")
+            with col_pdf:
+                pdf_path = export_to_pdf(df)
+                with open(pdf_path, "rb") as f:
+                    st.download_button("⬇️ Download PDF", f, file_name=pdf_path, mime="application/pdf")
+else:
+    st.info("Please enter some text above or upload a file to begin analysis.")
