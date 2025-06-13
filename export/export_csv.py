@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 
 def export_to_csv(data, filename=None):
-    """Export sentiment data to CSV"""
+    """Export sentiment data to CSV file"""
     if filename is None:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"sentiment_analysis_{timestamp}.csv"
@@ -23,7 +23,7 @@ def export_to_csv(data, filename=None):
     return filepath
 
 def create_csv_download_link(data):
-    """Create a download link for CSV data"""
+    """Create CSV data for download button"""
     if isinstance(data, dict):
         df = pd.DataFrame([data])
     else:
