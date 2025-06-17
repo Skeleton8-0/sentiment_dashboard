@@ -1,9 +1,37 @@
 import yake
+import re
+from collections import Counter
 
 def extract_keywords(text, top_n=5, language="en"):
-    kw_extractor = yake.KeywordExtractor(lan=language, n=1, top=top_n)
-    keywords = kw_extractor.extract_keywords(text)
-    return [kw for kw, score in keywords]
+    """Extract keywords using YAKE algorithm"""
+    try:
+        kw_extractor = yake.KeywordExtractor(lan=language, n=1, top=top_n)
+        keywords = kw_extractor.extract_keywords(text)
+        return [kw for kw, score in keywords]
+    except Exception as e:
+        # Fallback to simple frequency-based extraction
+        return extract_keywords_simple(text, top_n)
+
+def extract_keywords_simple(text, max_keywords=5):
+    """Fallback simple keyword extraction using frequency analysis"""
+    # Remove punctuation and convert to lowercase
+    clean_text = re.sub(r'[^\w\s]', '', text.lower())
+    
+    # Common stop words
+    stop_words = {
+        'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 
+        'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 
+        'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must',
+        'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them',
+        'my', 'your', 'his', 'her', 'its', 'our', 'their', 'this', 'that', 'these', 'those'
+    }
+    
+    # Split into words and filter
+    words = [word for word in clean_text.split() if word not in stop_words and len(word) > 2]
+    
+    # Count frequency and return top keywords
+    word_counts = Counter(words)
+    return [word for word, count in word_counts.most_common(max_keywords)]
 
 def explain_sentiment(result):
     """
