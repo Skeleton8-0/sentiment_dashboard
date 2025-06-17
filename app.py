@@ -20,6 +20,12 @@ import tempfile
 # --- Page Config & Header ---
 st.set_page_config(page_title="Senti-Bru", layout="wide")
 
+# Initialize session state
+if 'analysis_results' not in st.session_state:
+    st.session_state.analysis_results = None
+if 'analyzed_texts' not in st.session_state:
+    st.session_state.analyzed_texts = None
+
 st.markdown(
     """
     <style>
@@ -120,7 +126,23 @@ if analyze and texts:
         progress_bar.progress(1.0)
         status_text.text("✅ Analysis complete!")
 
+    # Store results in session state
+    st.session_state.analysis_results = results
+    st.session_state.analyzed_texts = texts.copy()
+    
     st.success("🎉 Analysis completed successfully!")
+
+# --- Display Results if Available ---
+if st.session_state.analysis_results is not None:
+    results = st.session_state.analysis_results
+    
+    # Add Clear Results button
+    col_clear, col_spacer = st.columns([1, 4])
+    with col_clear:
+        if st.button("🗑️ Clear Results", type="secondary"):
+            st.session_state.analysis_results = None
+            st.session_state.analyzed_texts = None
+            st.rerun()
 
     # --- Results Section ---
     st.markdown("## 📝 Analysis Results")
@@ -214,8 +236,11 @@ with st.sidebar:
     **API:** Powered by HuggingFace's RoBERTa model
     """)
     
-    if texts:
+    # Show current session info
+    if st.session_state.analysis_results is not None:
+        st.markdown(f"**Current results:** {len(st.session_state.analysis_results)} analyzed texts")
+        st.success("✅ Results available for download")
+    elif texts:
         st.markdown(f"**Current session:** {len(texts)} texts ready")
-
-    elif not texts and not analyze:
+    else:
         st.info("👆 Please enter some text or upload a file to get started!")
