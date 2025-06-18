@@ -122,7 +122,7 @@ st.markdown('<div class="main-content">', unsafe_allow_html=True)
 st.markdown('<div class="logo-banner">', unsafe_allow_html=True)
 col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
-    st.image("logo.png", width=180)
+    st.image("Logo.png", width=180)
 st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('<h1 class="section-title">Senti-Bru</h1>', unsafe_allow_html=True)
