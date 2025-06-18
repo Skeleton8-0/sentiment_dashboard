@@ -222,12 +222,15 @@ with tab1:
             st.download_button("⬇️ Download JSON", json_data, "sentiment_results.json", "application/json", key="manual_json_download")
         with col_pdf:
             try:
-                with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
-                    pdf_filename = export_to_pdf(df, tmp_file.name, counts=counts)
+                with st.spinner("📄 Generating PDF..."):
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
+                        pdf_filename = export_to_pdf(df, tmp_file.name, counts=counts)
+                    
                     with open(pdf_filename, "rb") as f:
                         pdf_data = f.read()
-                    st.download_button("⬇️ Download PDF", pdf_data, "sentiment_results.pdf", "application/pdf", key="manual_pdf_download")
-                    os.unlink(pdf_filename)
+                    
+                    os.remove(pdf_filename)
+                st.download_button("⬇️ Download PDF", pdf_data, "sentiment_results.pdf", "application/pdf", key="manual_pdf_download")
             except Exception as e:
                 st.error(f"PDF export error: {str(e)}")
 
@@ -332,12 +335,15 @@ with tab2:
             st.download_button("⬇️ Download JSON", json_data, "sentiment_results.json", "application/json", key="upload_json_download")
         with col_pdf:
             try:
-                with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
-                    pdf_filename = export_to_pdf(df, tmp_file.name, counts=counts)
+                with st.spinner("📄 Generating PDF..."):
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as tmp_file:
+                        pdf_filename = export_to_pdf(df, tmp_file.name, counts=counts)
+                    
                     with open(pdf_filename, "rb") as f:
                         pdf_data = f.read()
-                    st.download_button("⬇️ Download PDF", pdf_data, "sentiment_results.pdf", "application/pdf", key="upload_pdf_download")
-                    os.unlink(pdf_filename)
+                    
+                    os.remove(pdf_filename)
+                st.download_button("⬇️ Download PDF", pdf_data, "sentiment_results.pdf", "application/pdf", key="upload_pdf_download")
             except Exception as e:
                 st.error(f"PDF export error: {str(e)}")
 
