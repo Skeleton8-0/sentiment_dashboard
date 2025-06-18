@@ -6,6 +6,9 @@ from io import StringIO
 import docx2txt
 import fitz
 import tempfile
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from utils.api_client import batch_analyze_sentiment_with_keywords
 from utils.text_processing import explain_sentiment
